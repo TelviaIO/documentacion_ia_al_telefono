@@ -2,13 +2,13 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
-import { 
-  Bold, 
-  Italic, 
-  List, 
-  ListOrdered, 
-  Heading1, 
-  Heading2, 
+import {
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  Heading1,
+  Heading2,
   Heading3,
   Quote,
   Image as ImageIcon,
@@ -70,8 +70,16 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
       return;
     }
 
+    if (file.size > 80 * 1024) {
+      toast.error('La imagen no puede pesar más de 80 KB. Por favor optimízala.');
+      return;
+    }
+
+    const altText = window.prompt('Texto alternativo (alt) para la imagen (importante para SEO):');
+    if (altText === null) return; // User cancelled
+
     const fileName = `${Date.now()}-${file.name}`;
-    
+
     const { data, error } = await supabase.storage
       .from('doc-images')
       .upload(fileName, file);
@@ -86,7 +94,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
       .from('doc-images')
       .getPublicUrl(data.path);
 
-    editor?.chain().focus().setImage({ src: publicUrl }).run();
+    editor?.chain().focus().setImage({ src: publicUrl, alt: altText }).run();
     toast.success('Imagen subida correctamente');
   }, [editor]);
 
@@ -121,7 +129,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <Bold className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
           size="sm"
           pressed={editor.isActive('italic')}
@@ -130,7 +138,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <Italic className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
           size="sm"
           pressed={editor.isActive('code')}
@@ -139,9 +147,9 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <Code className="h-4 w-4" />
         </Toggle>
-        
+
         <Separator orientation="vertical" className="h-6 mx-1" />
-        
+
         <Toggle
           size="sm"
           pressed={editor.isActive('heading', { level: 1 })}
@@ -150,7 +158,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <Heading1 className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
           size="sm"
           pressed={editor.isActive('heading', { level: 2 })}
@@ -159,7 +167,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <Heading2 className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
           size="sm"
           pressed={editor.isActive('heading', { level: 3 })}
@@ -168,9 +176,9 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <Heading3 className="h-4 w-4" />
         </Toggle>
-        
+
         <Separator orientation="vertical" className="h-6 mx-1" />
-        
+
         <Toggle
           size="sm"
           pressed={editor.isActive('bulletList')}
@@ -179,7 +187,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <List className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
           size="sm"
           pressed={editor.isActive('orderedList')}
@@ -188,7 +196,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <ListOrdered className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
           size="sm"
           pressed={editor.isActive('blockquote')}
@@ -197,9 +205,9 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <Quote className="h-4 w-4" />
         </Toggle>
-        
+
         <Separator orientation="vertical" className="h-6 mx-1" />
-        
+
         <Button
           size="sm"
           variant="ghost"
@@ -215,7 +223,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
           className="hidden"
           onChange={onFileChange}
         />
-        
+
         <Button
           size="sm"
           variant="ghost"
@@ -225,9 +233,9 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <LinkIcon className="h-4 w-4" />
         </Button>
-        
+
         <Separator orientation="vertical" className="h-6 mx-1" />
-        
+
         <Button
           size="sm"
           variant="ghost"
@@ -237,7 +245,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
         >
           <Undo className="h-4 w-4" />
         </Button>
-        
+
         <Button
           size="sm"
           variant="ghost"
@@ -248,7 +256,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
           <Redo className="h-4 w-4" />
         </Button>
       </div>
-      
+
       {/* Editor content */}
       <EditorContent editor={editor} />
     </div>

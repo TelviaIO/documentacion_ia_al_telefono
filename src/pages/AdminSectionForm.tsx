@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -21,6 +22,7 @@ export default function AdminSectionForm() {
   const [slug, setSlug] = useState('');
   const [icon, setIcon] = useState('');
   const [order, setOrder] = useState(0);
+  const [parentId, setParentId] = useState<string | null>(null);
 
   const isEditing = !!id;
   const currentSection = sections?.find(s => s.id === id);
@@ -37,8 +39,10 @@ export default function AdminSectionForm() {
       setSlug(currentSection.slug);
       setIcon(currentSection.icon || '');
       setOrder(currentSection.order);
+      setParentId(currentSection.parent_id);
     } else if (sections) {
       setOrder(sections.length);
+      setParentId(null);
     }
   }, [currentSection, sections]);
 
@@ -61,12 +65,26 @@ export default function AdminSectionForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const finalParentId = parentId === 'none' ? null : parentId;
+
     try {
       if (isEditing && id) {
-        await updateSection.mutateAsync({ id, title, slug, icon: icon || undefined });
+        await updateSection.mutateAsync({
+          id,
+          title,
+          slug,
+          icon: icon || undefined,
+          parent_id: finalParentId
+        });
         toast.success('Sección actualizada');
       } else {
-        await createSection.mutateAsync({ title, slug, icon: icon || undefined, order });
+        await createSection.mutateAsync({
+          title,
+          slug,
+          icon: icon || undefined,
+          order,
+          parent_id: finalParentId
+        });
         toast.success('Sección creada');
       }
       navigate('/admin');
@@ -86,6 +104,9 @@ export default function AdminSectionForm() {
   if (!user || !isAdmin) {
     return null;
   }
+
+  // Filter sections to avoid self-reference or circular dependnecy (basic 1-level check)
+  const parentOptions = sections?.filter(s => s.id !== id) || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -134,6 +155,29 @@ export default function AdminSectionForm() {
                 />
                 <p className="text-xs text-muted-foreground">
                   Se usará en la URL: /docs/{slug || 'slug'}/...
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="parent">Sección Padre (Opcional)</Label>
+                <Select
+                  value={parentId || "none"}
+                  onValueChange={(value) => setParentId(value === "none" ? null : value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar sección padre" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Ninguna (Sección principal)</SelectItem>
+                    {parentOptions.map((section) => (
+                      <SelectItem key={section.id} value={section.id}>
+                        {section.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Si seleccionas una padre, esta sección se convertirá en una subsección.
                 </p>
               </div>
 

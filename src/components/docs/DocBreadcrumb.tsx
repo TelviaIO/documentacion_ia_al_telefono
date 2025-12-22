@@ -20,28 +20,31 @@ interface DocBreadcrumbProps {
 
 export function DocBreadcrumb({ items }: DocBreadcrumbProps) {
   return (
-    <Breadcrumb className="mb-6">
-      <BreadcrumbList>
+    <Breadcrumb className="mb-8">
+      <BreadcrumbList className="gap-1.5 sm:gap-2.5">
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link to="/" className="flex items-center gap-1">
-              <Home className="h-4 w-4" />
-              <span className="sr-only">Inicio</span>
+            <Link to="/" className="text-muted-foreground/60 hover:text-primary transition-colors">
+              <span className="text-[13px] font-medium tracking-tight">Docs</span>
             </Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        
+
         {items.map((item, index) => (
           <BreadcrumbItem key={index}>
-            <BreadcrumbSeparator>
-              <ChevronRight className="h-4 w-4" />
+            <BreadcrumbSeparator className="opacity-40">
+              <ChevronRight className="h-3.5 w-3.5" />
             </BreadcrumbSeparator>
             {item.href ? (
               <BreadcrumbLink asChild>
-                <Link to={item.href}>{item.label}</Link>
+                <Link to={item.href} className="text-muted-foreground/60 hover:text-primary transition-colors text-[13px] font-medium tracking-tight">
+                  {item.label}
+                </Link>
               </BreadcrumbLink>
             ) : (
-              <BreadcrumbPage>{item.label}</BreadcrumbPage>
+              <BreadcrumbPage className="text-muted-foreground/40 text-[13px] font-medium tracking-tight">
+                {item.label}
+              </BreadcrumbPage>
             )}
           </BreadcrumbItem>
         ))}

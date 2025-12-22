@@ -31,7 +31,7 @@ export function useSections() {
         .from('doc_sections')
         .select('*')
         .order('order');
-      
+
       if (error) throw error;
       return data as DocSection[];
     },
@@ -46,13 +46,13 @@ export function usePages(sectionId?: string) {
         .from('doc_pages')
         .select('*')
         .order('order');
-      
+
       if (sectionId) {
         query = query.eq('section_id', sectionId);
       }
-      
+
       const { data, error } = await query;
-      
+
       if (error) throw error;
       return data as DocPage[];
     },
@@ -69,10 +69,10 @@ export function usePage(sectionSlug: string, pageSlug: string) {
         .select('id')
         .eq('slug', sectionSlug)
         .maybeSingle();
-      
+
       if (sectionError) throw sectionError;
       if (!section) return null;
-      
+
       // Then get the page
       const { data: page, error: pageError } = await supabase
         .from('doc_pages')
@@ -80,7 +80,7 @@ export function usePage(sectionSlug: string, pageSlug: string) {
         .eq('section_id', section.id)
         .eq('slug', pageSlug)
         .maybeSingle();
-      
+
       if (pageError) throw pageError;
       return page as DocPage | null;
     },
@@ -90,7 +90,7 @@ export function usePage(sectionSlug: string, pageSlug: string) {
 
 export function useUpdatePage() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ id, title, content }: { id: string; title: string; content: string }) => {
       const { data, error } = await supabase
@@ -99,7 +99,7 @@ export function useUpdatePage() {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -112,12 +112,12 @@ export function useUpdatePage() {
 
 export function useCreatePage() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ section_id, title, slug, content, order }: { 
-      section_id: string; 
-      title: string; 
-      slug: string; 
+    mutationFn: async ({ section_id, title, slug, content, order }: {
+      section_id: string;
+      title: string;
+      slug: string;
       content: string;
       order: number;
     }) => {
@@ -126,7 +126,7 @@ export function useCreatePage() {
         .insert({ section_id, title, slug, content, order })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -138,14 +138,14 @@ export function useCreatePage() {
 
 export function useDeletePage() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('doc_pages')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -156,16 +156,16 @@ export function useDeletePage() {
 
 export function useUpdateSection() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ id, title, slug, icon }: { id: string; title: string; slug: string; icon?: string }) => {
+    mutationFn: async ({ id, title, slug, icon, parent_id }: { id: string; title: string; slug: string; icon?: string; parent_id?: string | null }) => {
       const { data, error } = await supabase
         .from('doc_sections')
-        .update({ title, slug, icon })
+        .update({ title, slug, icon, parent_id })
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -177,20 +177,21 @@ export function useUpdateSection() {
 
 export function useCreateSection() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ title, slug, icon, order }: { 
-      title: string; 
-      slug: string; 
+    mutationFn: async ({ title, slug, icon, order, parent_id }: {
+      title: string;
+      slug: string;
       icon?: string;
       order: number;
+      parent_id?: string | null;
     }) => {
       const { data, error } = await supabase
         .from('doc_sections')
-        .insert({ title, slug, icon, order })
+        .insert({ title, slug, icon, order, parent_id })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -202,14 +203,14 @@ export function useCreateSection() {
 
 export function useDeleteSection() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('doc_sections')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {

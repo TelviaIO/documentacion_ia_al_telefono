@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 15%;
 
-    --primary: 245 58% 51%;
+    --primary: 255 85% 65%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 20% 96%;
@@ -24,84 +24,84 @@
     --muted: 240 15% 95%;
     --muted-foreground: 240 5% 46%;
 
-    --accent: 280 60% 96%;
-    --accent-foreground: 245 58% 45%;
+    --accent: 260 80% 96%;
+    --accent-foreground: 255 70% 45%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 10% 90%;
-    --input: 240 10% 90%;
-    --ring: 245 58% 51%;
+    --border: 240 10% 92%;
+    --input: 240 10% 92%;
+    --ring: 255 85% 65%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 5% 40%;
-    --sidebar-primary: 245 58% 51%;
+    --sidebar-foreground: 240 5% 35%;
+    --sidebar-primary: 255 85% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 280 60% 96%;
-    --sidebar-accent-foreground: 245 58% 45%;
-    --sidebar-border: 240 10% 92%;
-    --sidebar-ring: 245 58% 51%;
-    
-    --doc-nav-active: 245 58% 96%;
-    --doc-nav-active-border: 245 58% 51%;
+    --sidebar-accent: 260 80% 96%;
+    --sidebar-accent-foreground: 255 70% 45%;
+    --sidebar-border: 240 10% 94%;
+    --sidebar-ring: 255 85% 65%;
 
-    /* Gradient colors */
-    --gradient-start: 240 100% 99%;
-    --gradient-mid: 260 80% 98%;
-    --gradient-end: 280 70% 97%;
+    --doc-nav-active: 255 85% 97%;
+    --doc-nav-active-border: 255 85% 65%;
+
+    /* Gradient colors - Softer, light lilac/blue spots */
+    --gradient-start: 220 100% 98%;
+    --gradient-mid: 260 100% 98%;
+    --gradient-end: 280 100% 98%;
 
     --font-sans: 'Inter', system-ui, sans-serif;
     --font-serif: 'Source Serif 4', Georgia, serif;
   }
 
   .dark {
-    --background: 240 15% 8%;
+    --background: 240 15% 6%;
     --foreground: 240 10% 96%;
 
-    --card: 240 15% 10%;
+    --card: 240 15% 8%;
     --card-foreground: 240 10% 96%;
 
-    --popover: 240 15% 10%;
+    --popover: 240 15% 8%;
     --popover-foreground: 240 10% 96%;
 
-    --primary: 245 58% 60%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 255 85% 75%;
+    --primary-foreground: 240 15% 8%;
 
-    --secondary: 240 15% 16%;
+    --secondary: 240 15% 12%;
     --secondary-foreground: 240 10% 96%;
 
-    --muted: 240 15% 16%;
-    --muted-foreground: 240 5% 60%;
+    --muted: 240 15% 12%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 280 40% 20%;
-    --accent-foreground: 280 60% 75%;
+    --accent: 260 50% 15%;
+    --accent-foreground: 260 80% 85%;
 
-    --destructive: 0 62% 30%;
+    --destructive: 0 62% 35%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 15% 18%;
-    --input: 240 15% 18%;
-    --ring: 245 58% 60%;
-    
-    --sidebar-background: 240 15% 10%;
-    --sidebar-foreground: 240 5% 70%;
-    --sidebar-primary: 245 58% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 280 40% 20%;
-    --sidebar-accent-foreground: 280 60% 75%;
-    --sidebar-border: 240 15% 18%;
-    --sidebar-ring: 245 58% 60%;
-    
-    --doc-nav-active: 245 50% 20%;
-    --doc-nav-active-border: 245 58% 60%;
+    --border: 240 15% 14%;
+    --input: 240 15% 14%;
+    --ring: 255 85% 75%;
 
-    /* Gradient colors */
-    --gradient-start: 240 20% 10%;
-    --gradient-mid: 260 20% 12%;
-    --gradient-end: 280 20% 14%;
+    --sidebar-background: 240 15% 8%;
+    --sidebar-foreground: 240 5% 75%;
+    --sidebar-primary: 255 85% 75%;
+    --sidebar-primary-foreground: 240 15% 8%;
+    --sidebar-accent: 260 50% 15%;
+    --sidebar-accent-foreground: 260 80% 85%;
+    --sidebar-border: 240 15% 14%;
+    --sidebar-ring: 255 85% 75%;
+
+    --doc-nav-active: 255 50% 15%;
+    --doc-nav-active-border: 255 85% 75%;
+
+    /* Gradient colors - Dark mode variants */
+    --gradient-start: 240 20% 6%;
+    --gradient-mid: 260 20% 8%;
+    --gradient-end: 280 20% 10%;
   }
 }
 
@@ -113,17 +113,20 @@
   body {
     @apply text-foreground font-sans antialiased;
     font-family: var(--font-sans);
-    background: linear-gradient(
-      135deg,
-      hsl(var(--gradient-start)) 0%,
-      hsl(var(--gradient-mid)) 50%,
-      hsl(var(--gradient-end)) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(var(--gradient-start)) 0%,
+        hsl(var(--gradient-mid)) 50%,
+        hsl(var(--gradient-end)) 100%);
     background-attachment: fixed;
     min-height: 100vh;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
   }
 }
@@ -132,63 +135,64 @@
   .prose-doc {
     @apply text-foreground leading-relaxed;
   }
-  
+
   .prose-doc h1 {
     @apply text-3xl md:text-4xl font-bold mt-8 mb-4 text-foreground;
   }
-  
+
   .prose-doc h2 {
     @apply text-2xl font-semibold mt-8 mb-4 text-foreground;
   }
-  
+
   .prose-doc h3 {
     @apply text-xl font-semibold mt-6 mb-3 text-foreground;
   }
-  
+
   .prose-doc p {
     @apply mb-4 text-muted-foreground;
   }
-  
-  .prose-doc ul, .prose-doc ol {
+
+  .prose-doc ul,
+  .prose-doc ol {
     @apply mb-4 pl-6;
   }
-  
+
   .prose-doc li {
     @apply mb-2 text-muted-foreground;
   }
-  
+
   .prose-doc ul {
     @apply list-disc;
   }
-  
+
   .prose-doc ol {
     @apply list-decimal;
   }
-  
+
   .prose-doc strong {
     @apply font-semibold text-foreground;
   }
-  
+
   .prose-doc a {
     @apply text-primary underline underline-offset-2 hover:text-primary/80 transition-colors;
   }
-  
+
   .prose-doc img {
     @apply rounded-lg my-6 max-w-full;
   }
-  
+
   .prose-doc blockquote {
     @apply border-l-4 border-primary pl-4 italic my-4 text-muted-foreground;
   }
-  
+
   .prose-doc code {
     @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
   }
-  
+
   .prose-doc pre {
     @apply bg-muted p-4 rounded-lg overflow-x-auto my-4;
   }
-  
+
   .prose-doc pre code {
     @apply bg-transparent p-0;
   }
@@ -202,4 +206,112 @@
 .tiptap p.is-editor-empty:first-child::before {
   @apply text-muted-foreground pointer-events-none float-left h-0;
   content: attr(data-placeholder);
+}
+
+/* CMDK Styles */
+[cmdk-dialog] {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background-color: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(4px);
+}
+
+[cmdk-dialog] [cmdk-overlay] {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+}
+
+[cmdk-dialog] [cmdk-body] {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  max-width: 640px;
+  max-height: 450px;
+  transform: translate(-50%, -50%);
+  background: hsl(var(--popover));
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 10px 30px -10px hsl(var(--foreground) / 0.1);
+  overflow: hidden;
+  padding: 0;
+  animation: cm-in 150ms ease forwards;
+}
+
+[cmdk-input] {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 16px;
+  font-size: 16px;
+  background: transparent;
+  color: hsl(var(--foreground));
+  outline: none;
+}
+
+[cmdk-list] {
+  height: min(300px, var(--radix-popover-content-available-height));
+  overflow: auto;
+  overscroll-behavior: contain;
+  transition: 100ms ease;
+  padding: 8px;
+  scroll-padding-block-end: 8px;
+}
+
+[cmdk-group-heading] {
+  user-select: none;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+  padding: 8px 8px 4px 8px;
+  font-weight: 500;
+}
+
+[cmdk-item] {
+  content-visibility: auto;
+  cursor: pointer;
+  height: 48px;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: hsl(var(--foreground));
+  user-select: none;
+  will-change: background, color;
+  transition: all 150ms ease;
+}
+
+[cmdk-item][aria-selected="true"] {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+[cmdk-item][aria-disabled="true"] {
+  color: hsl(var(--muted-foreground));
+  cursor: not-allowed;
+}
+
+[cmdk-empty] {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  white-space: pre-wrap;
+  color: hsl(var(--muted-foreground));
+}
+
+@keyframes cm-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }

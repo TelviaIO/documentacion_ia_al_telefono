@@ -20,7 +20,7 @@ export function DocTableOfContents({ content }: DocTableOfContentsProps) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, 'text/html');
     const headingElements = doc.querySelectorAll('h1, h2, h3');
-    
+
     const items: TocItem[] = [];
     headingElements.forEach((heading, index) => {
       const id = heading.id || `heading-${index}`;
@@ -30,7 +30,7 @@ export function DocTableOfContents({ content }: DocTableOfContentsProps) {
         level: parseInt(heading.tagName.charAt(1)),
       });
     });
-    
+
     setHeadings(items);
   }, [content]);
 
@@ -61,24 +61,30 @@ export function DocTableOfContents({ content }: DocTableOfContentsProps) {
   }
 
   return (
-    <nav className="hidden xl:block w-64 shrink-0" aria-label="Tabla de contenidos">
-      <div className="sticky top-24 space-y-2">
-        <p className="text-sm font-medium text-foreground mb-4">En esta página</p>
-        <ul className="space-y-2">
+    <nav className="hidden xl:block w-56 shrink-0 pl-8 border-l border-border/40" aria-label="Tabla de contenidos">
+      <div className="sticky top-24 space-y-4">
+        <p className="text-[12px] font-bold text-foreground/80 flex items-center gap-2">
+          <span className="w-1 h-3 bg-primary rounded-full" />
+          ON THIS PAGE
+        </p>
+        <ul className="space-y-1">
           {headings.map((heading) => (
             <li
               key={heading.id}
-              style={{ paddingLeft: `${(heading.level - 1) * 12}px` }}
             >
               <a
                 href={`#${heading.id}`}
                 className={cn(
-                  "text-sm block py-1 transition-colors",
+                  "text-[13px] block py-1.5 transition-all relative",
                   activeId === heading.id
                     ? "text-primary font-medium"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground/80 hover:text-foreground"
                 )}
+                style={{ paddingLeft: `${(heading.level - 1) * 8}px` }}
               >
+                {activeId === heading.id && (
+                  <span className="absolute left-[-32px] top-1/2 -translate-y-1/2 w-1 h-1 bg-primary rounded-full" />
+                )}
                 {heading.text}
               </a>
             </li>

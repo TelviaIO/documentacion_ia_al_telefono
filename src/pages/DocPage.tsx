@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Pencil, Save, X } from 'lucide-react';
+import { Pencil, Save, X, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 
@@ -23,7 +23,7 @@ export default function DocPage() {
   const { data: allPages } = usePages();
   const { isAdmin } = useAuth();
   const updatePage = useUpdatePage();
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
@@ -57,8 +57,8 @@ export default function DocPage() {
     );
 
     const prevPage = currentIndex > 0 ? allPagesWithSections[currentIndex - 1] : undefined;
-    const nextPage = currentIndex < allPagesWithSections.length - 1 
-      ? allPagesWithSections[currentIndex + 1] 
+    const nextPage = currentIndex < allPagesWithSections.length - 1
+      ? allPagesWithSections[currentIndex + 1]
       : undefined;
 
     return {
@@ -71,7 +71,7 @@ export default function DocPage() {
 
   const handleSave = async () => {
     if (!page) return;
-    
+
     try {
       await updatePage.mutateAsync({
         id: page.id,
@@ -143,7 +143,7 @@ export default function DocPage() {
         <div className="flex">
           <article className="flex-1 max-w-4xl mx-auto px-4 md:px-8 py-8">
             <DocBreadcrumb items={breadcrumbItems} />
-            
+
             {isEditing ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -154,12 +154,12 @@ export default function DocPage() {
                     placeholder="Título de la página"
                   />
                 </div>
-                
+
                 <RichTextEditor
                   content={editContent}
                   onChange={setEditContent}
                 />
-                
+
                 <div className="flex items-center gap-2">
                   <Button onClick={handleSave} disabled={updatePage.isPending}>
                     <Save className="h-4 w-4 mr-2" />
@@ -177,35 +177,50 @@ export default function DocPage() {
                   <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                     {page.title}
                   </h1>
-                  
-                  {isAdmin && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setIsEditing(true)}
-                      className="shrink-0"
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const plainText = page.content.replace(/<[^>]+>/g, '\n').replace(/\n\s*\n/g, '\n').trim();
+                        navigator.clipboard.writeText(plainText);
+                        toast.success('Contenido copiado al portapapeles');
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
                     >
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Editar
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copiar
                     </Button>
-                  )}
+
+                    {isAdmin && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Editar
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                
-                <div 
+
+                <div
                   className="prose-doc"
                   dangerouslySetInnerHTML={{ __html: page.content }}
                 />
-                
+
                 <DocNavigation prev={prev} next={next} />
               </>
             )}
           </article>
-          
+
           {!isEditing && page.content && (
             <DocTableOfContents content={page.content} />
           )}
         </div>
-        
+
         <AdminButton />
       </DocLayout>
     </>
