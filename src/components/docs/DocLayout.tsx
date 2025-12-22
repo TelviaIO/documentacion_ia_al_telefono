@@ -11,7 +11,7 @@ export function DocLayout({ children }: DocLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <DocHeader 
         onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
         isMenuOpen={isMobileMenuOpen}
@@ -21,7 +21,7 @@ export function DocLayout({ children }: DocLayoutProps) {
         {/* Mobile sidebar overlay */}
         {isMobileMenuOpen && (
           <div 
-            className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm lg:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
@@ -29,8 +29,10 @@ export function DocLayout({ children }: DocLayoutProps) {
         {/* Sidebar */}
         <aside
           className={cn(
-            "fixed lg:sticky top-16 z-40 h-[calc(100vh-4rem)] w-72 border-r border-border bg-sidebar overflow-y-auto",
+            "fixed lg:sticky top-16 z-40 h-[calc(100vh-4rem)] w-72 overflow-y-auto",
+            "bg-card/80 backdrop-blur-xl border-r border-border/50",
             "transition-transform duration-300 lg:translate-x-0",
+            "shadow-lg lg:shadow-none",
             isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
@@ -39,7 +41,9 @@ export function DocLayout({ children }: DocLayoutProps) {
         
         {/* Main content */}
         <main className="flex-1 min-w-0">
-          {children}
+          <div className="bg-card/60 backdrop-blur-sm min-h-[calc(100vh-4rem)]">
+            {children}
+          </div>
         </main>
       </div>
     </div>
