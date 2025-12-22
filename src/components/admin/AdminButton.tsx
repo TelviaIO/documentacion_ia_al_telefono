@@ -16,25 +16,37 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 export function AdminButton() {
-  const { user, isAdmin, signIn, signOut, loading } = useAuth();
+  const { user, isAdmin, signIn, signUp, signOut, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      toast.error('Error al iniciar sesión: ' + error.message);
+    if (isSignUpMode) {
+      const { error } = await signUp(email, password);
+      
+      if (error) {
+        toast.error('Error al registrarse: ' + error.message);
+      } else {
+        toast.success('Usuario creado. Ahora inicia sesión.');
+        setIsSignUpMode(false);
+      }
     } else {
-      toast.success('Sesión iniciada correctamente');
-      setOpen(false);
-      setEmail('');
-      setPassword('');
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        toast.error('Error al iniciar sesión: ' + error.message);
+      } else {
+        toast.success('Sesión iniciada correctamente');
+        setOpen(false);
+        setEmail('');
+        setPassword('');
+      }
     }
     
     setIsLoading(false);
@@ -79,9 +91,11 @@ export function AdminButton() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Acceso Administrador</DialogTitle>
+          <DialogTitle>{isSignUpMode ? 'Registro' : 'Acceso Administrador'}</DialogTitle>
           <DialogDescription>
-            Introduce tus credenciales para acceder al panel de administración.
+            {isSignUpMode 
+              ? 'Crea una cuenta de administrador.' 
+              : 'Introduce tus credenciales para acceder al panel de administración.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -107,7 +121,17 @@ export function AdminButton() {
             />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            {isLoading 
+              ? (isSignUpMode ? 'Registrando...' : 'Iniciando sesión...') 
+              : (isSignUpMode ? 'Registrarse' : 'Iniciar sesión')}
+          </Button>
+          <Button 
+            type="button" 
+            variant="ghost" 
+            className="w-full" 
+            onClick={() => setIsSignUpMode(!isSignUpMode)}
+          >
+            {isSignUpMode ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
           </Button>
         </form>
       </DialogContent>
