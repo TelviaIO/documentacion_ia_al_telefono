@@ -1,0 +1,116 @@
+import { useState } from 'react';
+import { Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+
+export function AdminButton() {
+  const { user, isAdmin, signIn, signOut, loading } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const { error } = await signIn(email, password);
+    
+    if (error) {
+      toast.error('Error al iniciar sesión: ' + error.message);
+    } else {
+      toast.success('Sesión iniciada correctamente');
+      setOpen(false);
+      setEmail('');
+      setPassword('');
+    }
+    
+    setIsLoading(false);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Sesión cerrada');
+  };
+
+  if (loading) {
+    return null;
+  }
+
+  if (user && isAdmin) {
+    return (
+      <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2">
+        <Link to="/admin">
+          <Button size="sm" variant="outline" className="gap-2">
+            <Settings className="h-4 w-4" />
+            Admin
+          </Button>
+        </Link>
+        <Button size="sm" variant="ghost" onClick={handleSignOut}>
+          Salir
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button 
+          size="icon" 
+          variant="ghost" 
+          className="fixed bottom-4 right-4 z-50 opacity-20 hover:opacity-100 transition-opacity h-8 w-8"
+          aria-label="Acceso administrador"
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Acceso Administrador</DialogTitle>
+          <DialogDescription>
+            Introduce tus credenciales para acceder al panel de administración.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@ejemplo.com"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Contraseña</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
