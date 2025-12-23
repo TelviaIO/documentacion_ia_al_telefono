@@ -39,9 +39,7 @@ export function SortableSidebarItem({ id, children, isOverlay }: SortableSidebar
                 className={cn(
                     "absolute right-1 top-1/2 -translate-y-1/2 p-1 cursor-grab rounded-sm z-20",
                     "text-muted-foreground/30 hover:text-foreground hover:bg-muted",
-                    "opacity-0 group-hover/sortable:opacity-100 transition-opacity",
-                    // Only show handle on larger screens to avoid mobile clutter
-                    "hidden hover:block" // Force block on hover to ensure it shows
+                    "opacity-0 group-hover/sortable:opacity-100 transition-opacity"
                 )}
                 onClick={(e) => e.stopPropagation()} // Prevent triggering accordion/link
             >
