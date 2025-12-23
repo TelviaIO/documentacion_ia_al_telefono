@@ -1,4 +1,3 @@
-```typescript
 import { Search, Menu, X, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,7 @@ export function DocHeader({ onMenuToggle, isMenuOpen }: DocHeaderProps) {
   const renderNavItem = (item: any) => {
     if (item.type === 'button') {
       return (
-        <Button 
+        <Button
           key={item.id}
           asChild
           className="rounded-full px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm hover:shadow-primary/20 transition-all"
@@ -37,8 +36,8 @@ export function DocHeader({ onMenuToggle, isMenuOpen }: DocHeaderProps) {
     }
 
     const Component = item.url.startsWith('http') ? 'a' : Link;
-    const props = item.url.startsWith('http') 
-      ? { href: item.url, target: '_blank', rel: 'noopener noreferrer' } 
+    const props = item.url.startsWith('http')
+      ? { href: item.url, target: '_blank', rel: 'noopener noreferrer' }
       : { to: item.url };
 
     return (
@@ -101,22 +100,22 @@ export function DocHeader({ onMenuToggle, isMenuOpen }: DocHeaderProps) {
           <nav className="hidden lg:flex items-center gap-6">
             {/* Fallback items if loading or empty, though hook handles default */}
             {!navItems && (
-               <>
+              <>
                 <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Homepage</Link>
                 <Link to="/support" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Support</Link>
                 <Link to="/compliance" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Compliance</Link>
               </>
             )}
-            
+
             {links.map(renderNavItem)}
           </nav>
 
           {buttons.map(renderNavItem)}
 
           {isAdmin && (
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               className="hidden lg:flex gap-2 border-dashed text-muted-foreground"
               onClick={() => setNavEditorOpen(true)}
             >
@@ -135,10 +134,9 @@ export function DocHeader({ onMenuToggle, isMenuOpen }: DocHeaderProps) {
           </Button>
         </div>
       </div>
-      
+
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <NavEditorDialog open={navEditorOpen} onOpenChange={setNavEditorOpen} />
     </header>
   );
 }
-```
