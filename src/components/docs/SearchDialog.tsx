@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { usePages, useSections } from "@/hooks/useDocumentation"
-import { Search, FileText, Hash } from "lucide-react"
+import { Search, FileText, Hash, ArrowRight } from "lucide-react"
 
 interface SearchDialogProps {
     open: boolean
@@ -26,13 +26,13 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         const down = (e: KeyboardEvent) => {
             if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault()
-                onOpenChange((open) => !open)
+                onOpenChange(!open)
             }
         }
 
         document.addEventListener("keydown", down)
         return () => document.removeEventListener("keydown", down)
-    }, [onOpenChange])
+    }, [onOpenChange, open])
 
     const runCommand = (command: () => void) => {
         onOpenChange(false)
@@ -42,10 +42,19 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     // Pre-process items for search
     const items = pages?.map(page => {
         const section = sections?.find(s => s.id === page.section_id)
+        // Clean content for search index - remove simple markdown chars
+        const cleanContent = page.content
+            ?.replace(/[#*`\[\]()]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 500) || ''; // Index first 500 chars for performance if needed, or more
+
         return {
             id: page.id,
             title: page.title,
             slug: page.slug,
+            content: cleanContent,
+            rawContent: page.content || '',
             sectionSlug: section?.slug || '',
             sectionTitle: section?.title || 'Sin sección',
             type: 'page' as const
@@ -62,8 +71,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     return (
         <div className="search-dialog-wrapper">
             <CommandDialog open={open} onOpenChange={onOpenChange}>
-                <CommandInput placeholder="Buscar documentación..." />
-                <CommandList className="max-h-[350px]">
+                <CommandInput placeholder="Buscar en documentación..." />
+                <CommandList className="max-h-[80vh] overflow-y-auto">
                     <CommandEmpty>No se encontraron resultados.</CommandEmpty>
 
                     {items.length > 0 && (
@@ -71,17 +80,30 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                             {items.map((item) => (
                                 <CommandItem
                                     key={item.id}
-                                    value={`${item.title} ${item.sectionTitle}`}
+                                    value={`${item.title} ${item.sectionTitle} ${item.content}`}
                                     onSelect={() => {
                                         runCommand(() => navigate(`/docs/${item.sectionSlug}/${item.slug}`))
                                     }}
-                                    className="flex items-center gap-2 px-4 py-2"
+                                    className="flex flex-col gap-1 px-4 py-3 border-b border-border/40 last:border-0"
                                 >
-                                    <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span>{item.title}</span>
-                                        <span className="text-xs text-muted-foreground">{item.sectionTitle}</span>
+                                    <div className="flex items-center gap-2 w-full">
+                                        <FileText className="h-4 w-4 text-primary/70 shrink-0" />
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium truncate">{item.title}</span>
+                                                <span className="text-xs text-muted-foreground/50 shrink-0 capitalize ml-auto bg-muted px-2 py-0.5 rounded-full">
+                                                    {item.sectionTitle}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    {/* Snippet preview - purely visual, cmdk handles filtering based on 'value' */}
+                                    {item.content && (
+                                        <div className="text-xs text-muted-foreground w-full line-clamp-2 pl-6">
+                                            {item.content}
+                                        </div>
+                                    )}
                                 </CommandItem>
                             ))}
                         </CommandGroup>
@@ -94,13 +116,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                                     key={item.id}
                                     value={item.title}
                                     onSelect={() => {
-                                        // Navigate to the first page of the section if possible, or just open the section in sidebar (this might need better logic if we had a dedicated section page)
-                                        // For now, let's find the first page of this section
                                         const firstPage = pages?.find(p => p.section_id === item.id)
                                         if (firstPage) {
                                             runCommand(() => navigate(`/docs/${item.slug}/${firstPage.slug}`))
-                                        } else {
-                                            // Fallback or handle empty section
                                         }
                                     }}
                                     className="flex items-center gap-2 px-4 py-2"
