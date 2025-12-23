@@ -37,9 +37,7 @@ export function SortableSidebarItem({ id, children, isOverlay }: SortableSidebar
                 {...attributes}
                 {...listeners}
                 className={cn(
-                    "absolute right-1 top-1/2 -translate-y-1/2 p-1 cursor-grab rounded-sm z-20",
-                    "text-muted-foreground/30 hover:text-foreground hover:bg-muted",
-                    "opacity-0 group-hover/sortable:opacity-100 transition-opacity"
+                    "bg-background/80 border shadow-sm text-foreground/50 hover:text-foreground hover:bg-background"
                 )}
                 onClick={(e) => e.stopPropagation()} // Prevent triggering accordion/link
             >

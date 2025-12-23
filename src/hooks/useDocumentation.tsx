@@ -19,6 +19,8 @@ export interface DocPage {
   slug: string;
   content: string;
   order: number;
+  meta_title?: string;
+  meta_description?: string;
   created_at: string;
   updated_at: string;
 }
@@ -34,6 +36,40 @@ export function useSections() {
 
       if (error) throw error;
       return data as DocSection[];
+    },
+  });
+}
+
+
+
+export function useUpdatePageDetails() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, order, meta_title, meta_description }: {
+      id: string;
+      order?: number;
+      meta_title?: string;
+      meta_description?: string;
+    }) => {
+      const updates: any = {};
+      if (order !== undefined) updates.order = order;
+      if (meta_title !== undefined) updates.meta_title = meta_title;
+      if (meta_description !== undefined) updates.meta_description = meta_description;
+
+      const { data, error } = await supabase
+        .from('doc_pages')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doc-pages'] });
+      queryClient.invalidateQueries({ queryKey: ['doc-page'] });
     },
   });
 }
@@ -272,8 +308,9 @@ export function useNavItems() {
   return useQuery({
     queryKey: ['doc-nav-items'],
     queryFn: async () => {
+      // @ts-ignore
       const { data, error } = await supabase
-        .from('doc_nav_items')
+        .from('doc_nav_items' as any)
         .select('*')
         .order('order');
 
@@ -289,7 +326,7 @@ export function useNavItems() {
         }
         throw error;
       }
-      return data as DocNavItem[];
+      return data as unknown as DocNavItem[];
     },
   });
 }
@@ -299,8 +336,9 @@ export function useUpdateNavItem() {
 
   return useMutation({
     mutationFn: async ({ id, label, url }: { id: string; label: string; url: string }) => {
+      // @ts-ignore
       const { data, error } = await supabase
-        .from('doc_nav_items')
+        .from('doc_nav_items' as any)
         .update({ label, url })
         .eq('id', id)
         .select()

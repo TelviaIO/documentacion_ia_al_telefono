@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useUpdatePageOrder, useUpdateSectionOrder } from '@/hooks/useDocumentation';
+import { useUpdatePageDetails, useUpdateSectionOrder } from '@/hooks/useDocumentation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
     Dialog,
     DialogContent,
@@ -24,24 +25,26 @@ interface ContentEditorDialogProps {
         slug: string;
         order: number;
         type: 'section' | 'page';
+        meta_title?: string;
+        meta_description?: string;
     } | null;
 }
 
 export function ContentEditorDialog({ open, onOpenChange, item }: ContentEditorDialogProps) {
-    const updatePageOrder = useUpdatePageOrder();
+    const updatePageDetails = useUpdatePageDetails();
     const updateSectionOrder = useUpdateSectionOrder();
     const [order, setOrder] = useState<string>('');
+    const [metaTitle, setMetaTitle] = useState('');
+    const [metaDescription, setMetaDescription] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Initialize state when item changes
-    if (item && order === '') {
-        // Only set if not already set (this simple check handles mounting roughly, but useEffect is better for controlled inputs)
-    }
-
-    // Actually let's use a key or effect
-    useState(() => {
-        if (item) setOrder(String(item.order));
-    });
+    useEffect(() => {
+        if (item) {
+            setOrder(String(item.order));
+            setMetaTitle(item.meta_title || '');
+            setMetaDescription(item.meta_description || '');
+        }
+    }, [item]);
 
     const handleSave = async () => {
         if (!item) return;
@@ -55,17 +58,20 @@ export function ContentEditorDialog({ open, onOpenChange, item }: ContentEditorD
         setLoading(true);
         try {
             if (item.type === 'page') {
-                // We only have a hook for bulk update, let's just use it for single item array
-                // Or we can create specific single update hooks, but reuse is fine
-                await updatePageOrder.mutateAsync([{ id: item.id, order: newOrder }]);
-                toast.success('Orden de página actualizado');
+                await updatePageDetails.mutateAsync({
+                    id: item.id,
+                    order: newOrder,
+                    meta_title: metaTitle,
+                    meta_description: metaDescription
+                });
+                toast.success('Detalles de página actualizados');
             } else {
                 await updateSectionOrder.mutateAsync([{ id: item.id, order: newOrder }]);
                 toast.success('Orden de sección actualizado');
             }
             onOpenChange(false);
         } catch (error) {
-            toast.error('Error al actualizar el orden');
+            toast.error('Error al actualizar');
             console.error(error);
         } finally {
             setLoading(false);
@@ -76,7 +82,7 @@ export function ContentEditorDialog({ open, onOpenChange, item }: ContentEditorD
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>Editar {item.type === 'section' ? 'Sección' : 'Página'}</DialogTitle>
                     <DialogDescription>
@@ -100,6 +106,33 @@ export function ContentEditorDialog({ open, onOpenChange, item }: ContentEditorD
                             type="number"
                         />
                     </div>
+
+                    {item.type === 'page' && (
+                        <>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="meta_title" className="text-right">Meta Title</Label>
+                                <Input
+                                    id="meta_title"
+                                    value={metaTitle}
+                                    onChange={(e) => setMetaTitle(e.target.value)}
+                                    className="col-span-3"
+                                    placeholder="Título para SEO (opcional)"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-start gap-4">
+                                <Label htmlFor="meta_description" className="text-right mt-2">Meta Desc.</Label>
+                                <Textarea
+                                    id="meta_description"
+                                    value={metaDescription}
+                                    onChange={(e) => setMetaDescription(e.target.value)}
+                                    className="col-span-3"
+                                    placeholder="Descripción para SEO (opcional)"
+                                    rows={3}
+                                />
+                            </div>
+                        </>
+                    )}
+
                     <p className="text-xs text-muted-foreground ml-[25%] col-span-3">
                         Número más bajo aparece primero.
                     </p>

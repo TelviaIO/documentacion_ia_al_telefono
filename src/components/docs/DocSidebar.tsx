@@ -43,7 +43,9 @@ export function DocSidebar({ onClose }: DocSidebarProps) {
     title: string;
     slug: string;
     order: number;
-    type: 'section' | 'page'
+    type: 'section' | 'page';
+    meta_title?: string;
+    meta_description?: string;
   } | null>(null);
 
   const updateSectionOrder = useUpdateSectionOrder();
@@ -86,12 +88,18 @@ export function DocSidebar({ onClose }: DocSidebarProps) {
   const openEditor = (e: React.MouseEvent, item: DocSection | DocPage, type: 'section' | 'page') => {
     e.stopPropagation();
     e.preventDefault();
+
+    const meta_title = 'meta_title' in item ? item.meta_title : undefined;
+    const meta_description = 'meta_description' in item ? item.meta_description : undefined;
+
     setEditingItem({
       id: item.id,
       title: item.title,
       slug: item.slug,
       order: item.order,
-      type
+      type,
+      meta_title,
+      meta_description
     });
     setEditorOpen(true);
   };
