@@ -27,11 +27,10 @@ export function DocHeader({ onMenuToggle, isMenuOpen }: DocHeaderProps) {
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
 
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm group-hover:shadow-md transition-all">
-              <BookOpen className="h-4 w-4" />
-            </div>
-            <span className="font-bold text-xl tracking-tight text-foreground hidden sm:block">IA al Teléfono</span>
+          <Link to="/" className="flex items-center group select-none">
+            <span className="font-bold text-2xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-[#8B5CF6] via-[#7C3AED] to-[#00D2FF] drop-shadow-sm group-hover:opacity-80 transition-opacity">
+              IA al Teléfono
+            </span>
           </Link>
         </div>
 
