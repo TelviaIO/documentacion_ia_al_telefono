@@ -240,11 +240,23 @@ export function useUpdateSectionOrder() {
   });
 }
 
-if (errors.length > 0) throw errors[0];
+export function useUpdatePageOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (updates: { id: string; order: number }[]) => {
+      const promises = updates.map(({ id, order }) =>
+        supabase.from('doc_pages').update({ order }).eq('id', id)
+      );
+
+      const results = await Promise.all(promises);
+      const errors = results.filter(r => r.error).map(r => r.error);
+
+      if (errors.length > 0) throw errors[0];
     },
-onSuccess: () => {
-  queryClient.invalidateQueries({ queryKey: ['doc-pages'] });
-},
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doc-pages'] });
+    },
   });
 }
 
