@@ -240,22 +240,65 @@ export function useUpdateSectionOrder() {
   });
 }
 
-export function useUpdatePageOrder() {
+if (errors.length > 0) throw errors[0];
+    },
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['doc-pages'] });
+},
+  });
+}
+
+export interface DocNavItem {
+  id: string;
+  label: string;
+  url: string;
+  type: 'link' | 'button';
+  order: number;
+}
+
+export function useNavItems() {
+  return useQuery({
+    queryKey: ['doc-nav-items'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('doc_nav_items')
+        .select('*')
+        .order('order');
+
+      if (error) {
+        // If table doesn't exist yet, return defaults
+        if (error.code === '42P01') {
+          return [
+            { id: '1', label: 'Homepage', url: '/', type: 'link', order: 1 },
+            { id: '2', label: 'Support', url: '/support', type: 'link', order: 2 },
+            { id: '3', label: 'Compliance', url: '/compliance', type: 'link', order: 3 },
+            { id: '4', label: 'Dashboard', url: '#', type: 'button', order: 4 },
+          ] as DocNavItem[];
+        }
+        throw error;
+      }
+      return data as DocNavItem[];
+    },
+  });
+}
+
+export function useUpdateNavItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (updates: { id: string; order: number }[]) => {
-      const promises = updates.map(({ id, order }) =>
-        supabase.from('doc_pages').update({ order }).eq('id', id)
-      );
+    mutationFn: async ({ id, label, url }: { id: string; label: string; url: string }) => {
+      const { data, error } = await supabase
+        .from('doc_nav_items')
+        .update({ label, url })
+        .eq('id', id)
+        .select()
+        .single();
 
-      const results = await Promise.all(promises);
-      const errors = results.filter(r => r.error).map(r => r.error);
-
-      if (errors.length > 0) throw errors[0];
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['doc-pages'] });
+      queryClient.invalidateQueries({ queryKey: ['doc-nav-items'] });
     },
   });
 }

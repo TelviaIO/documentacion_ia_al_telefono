@@ -1,9 +1,13 @@
-import { Search, Menu, X, BookOpen } from 'lucide-react';
+```typescript
+import { Search, Menu, X, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { SearchDialog } from './SearchDialog';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavItems } from '@/hooks/useDocumentation';
+import { NavEditorDialog } from '@/components/admin/NavEditorDialog';
 
 interface DocHeaderProps {
   onMenuToggle?: () => void;
@@ -12,6 +16,45 @@ interface DocHeaderProps {
 
 export function DocHeader({ onMenuToggle, isMenuOpen }: DocHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [navEditorOpen, setNavEditorOpen] = useState(false);
+  const { isAdmin } = useAuth();
+  const { data: navItems } = useNavItems();
+
+  const renderNavItem = (item: any) => {
+    if (item.type === 'button') {
+      return (
+        <Button 
+          key={item.id}
+          asChild
+          className="rounded-full px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm hover:shadow-primary/20 transition-all"
+        >
+          <a href={item.url} target={item.url.startsWith('http') ? '_blank' : undefined} rel={item.url.startsWith('http') ? 'noopener noreferrer' : undefined}>
+            {item.label}
+            <span className="ml-1 opacity-70">›</span>
+          </a>
+        </Button>
+      );
+    }
+
+    const Component = item.url.startsWith('http') ? 'a' : Link;
+    const props = item.url.startsWith('http') 
+      ? { href: item.url, target: '_blank', rel: 'noopener noreferrer' } 
+      : { to: item.url };
+
+    return (
+      <Component
+        key={item.id}
+        {...props}
+        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {item.label}
+      </Component>
+    );
+  };
+
+  // Filter items
+  const links = navItems?.filter(i => i.type === 'link') || [];
+  const buttons = navItems?.filter(i => i.type === 'button') || [];
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl">
@@ -56,15 +99,31 @@ export function DocHeader({ onMenuToggle, isMenuOpen }: DocHeaderProps) {
 
         <div className="ml-auto flex items-center gap-4 lg:gap-6">
           <nav className="hidden lg:flex items-center gap-6">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Homepage</Link>
-            <Link to="/support" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Support</Link>
-            <Link to="/compliance" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Compliance</Link>
+            {/* Fallback items if loading or empty, though hook handles default */}
+            {!navItems && (
+               <>
+                <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Homepage</Link>
+                <Link to="/support" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Support</Link>
+                <Link to="/compliance" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Compliance</Link>
+              </>
+            )}
+            
+            {links.map(renderNavItem)}
           </nav>
 
-          <Button className="rounded-full px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm hover:shadow-primary/20 transition-all">
-            Dashboard
-            <span className="ml-1 opacity-70">›</span>
-          </Button>
+          {buttons.map(renderNavItem)}
+
+          {isAdmin && (
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="hidden lg:flex gap-2 border-dashed text-muted-foreground"
+              onClick={() => setNavEditorOpen(true)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Editar Menú
+            </Button>
+          )}
 
           <Button
             variant="ghost"
@@ -76,8 +135,10 @@ export function DocHeader({ onMenuToggle, isMenuOpen }: DocHeaderProps) {
           </Button>
         </div>
       </div>
-
+      
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+      <NavEditorDialog open={navEditorOpen} onOpenChange={setNavEditorOpen} />
     </header>
   );
 }
+```

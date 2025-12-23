@@ -65,7 +65,7 @@ export function DocTableOfContents({ content }: DocTableOfContentsProps) {
       <div className="sticky top-24 space-y-4">
         <p className="text-[12px] font-bold text-foreground/80 flex items-center gap-2">
           <span className="w-1 h-3 bg-primary rounded-full" />
-          ON THIS PAGE
+          En esta página
         </p>
         <ul className="space-y-1">
           {headings.map((heading) => (
