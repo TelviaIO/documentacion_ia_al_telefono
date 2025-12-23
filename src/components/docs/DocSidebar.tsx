@@ -1,6 +1,7 @@
+```typescript
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronDown, Plus, Settings, BookOpen } from 'lucide-react';
+import { ChevronDown, Plus, Settings, BookOpen, GripVertical, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSections, usePages, DocSection, DocPage, useUpdateSectionOrder, useUpdatePageOrder } from '@/hooks/useDocumentation';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,6 +24,7 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableSidebarItem } from './SortableSidebarItem';
 import { toast } from 'sonner';
+import { ContentEditorDialog } from '@/components/admin/ContentEditorDialog';
 
 interface DocSidebarProps {
   onClose?: () => void;
@@ -34,6 +36,16 @@ export function DocSidebar({ onClose }: DocSidebarProps) {
   const { data: pages, isLoading: pagesLoading } = usePages();
   const { isAdmin } = useAuth();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  
+  // Editor Dialog State
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<{
+    id: string; 
+    title: string; 
+    slug: string; 
+    order: number; 
+    type: 'section' | 'page'
+  } | null>(null);
 
   const updateSectionOrder = useUpdateSectionOrder();
   const updatePageOrder = useUpdatePageOrder();
@@ -72,6 +84,19 @@ export function DocSidebar({ onClose }: DocSidebarProps) {
     setExpandedSections(newExpanded);
   };
 
+  const openEditor = (e: React.MouseEvent, item: DocSection | DocPage, type: 'section' | 'page') => {
+      e.stopPropagation();
+      e.preventDefault();
+      setEditingItem({
+          id: item.id,
+          title: item.title,
+          slug: item.slug,
+          order: item.order,
+          type
+      });
+      setEditorOpen(true);
+  };
+
   const getSectionPages = (sectionId: string) => {
     return pages?.filter(p => p.section_id === sectionId).sort((a, b) => a.order - b.order) || [];
   };
@@ -92,18 +117,18 @@ export function DocSidebar({ onClose }: DocSidebarProps) {
 
     // Handle Section Reordering
     if (activeId.startsWith('section-') && overId.startsWith('section-')) {
-      const isRoot = !sections?.find(s => `section-${s.id}` === activeId)?.parent_id;
+      const isRoot = !sections?.find(s => `section - ${ s.id } ` === activeId)?.parent_id;
 
       // Get all relevant siblings (either all roots, or all children of same parent)
-      const currentSection = sections?.find(s => `section-${s.id}` === activeId);
+      const currentSection = sections?.find(s => `section - ${ s.id } ` === activeId);
       const parentId = currentSection?.parent_id;
 
       const relevantSections = sections
         ?.filter(s => s.parent_id === parentId)
         .sort((a, b) => a.order - b.order) || [];
 
-      const oldIndex = relevantSections.findIndex(s => `section-${s.id}` === activeId);
-      const newIndex = relevantSections.findIndex(s => `section-${s.id}` === overId);
+      const oldIndex = relevantSections.findIndex(s => `section - ${ s.id } ` === activeId);
+      const newIndex = relevantSections.findIndex(s => `section - ${ s.id } ` === overId);
 
       if (oldIndex !== -1 && newIndex !== -1) {
         // Create new array with moved item
@@ -127,15 +152,15 @@ export function DocSidebar({ onClose }: DocSidebarProps) {
     }
     // Handle Page Reordering
     else if (activeId.startsWith('page-') && overId.startsWith('page-')) {
-      const currentPage = pages?.find(p => `page-${p.id}` === activeId);
+      const currentPage = pages?.find(p => `page - ${ p.id } ` === activeId);
       const sectionId = currentPage?.section_id;
 
       const relevantPages = pages
         ?.filter(p => p.section_id === sectionId)
         .sort((a, b) => a.order - b.order) || [];
 
-      const oldIndex = relevantPages.findIndex(p => `page-${p.id}` === activeId);
-      const newIndex = relevantPages.findIndex(p => `page-${p.id}` === overId);
+      const oldIndex = relevantPages.findIndex(p => `page - ${ p.id } ` === activeId);
+      const newIndex = relevantPages.findIndex(p => `page - ${ p.id } ` === overId);
 
       if (oldIndex !== -1 && newIndex !== -1) {
         const newOrder = [...relevantPages];
@@ -201,150 +226,192 @@ export function DocSidebar({ onClose }: DocSidebarProps) {
     const isActive = isExpanded || hasCurrentPage || hasActiveChild;
 
     const SectionHeader = (
-      <button
-        onClick={() => toggleSection(section.id)}
-        className={cn(
-          "flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold tracking-tight uppercase transition-colors relative",
-          "text-muted-foreground/70 hover:text-foreground",
-          "text-left group",
-          (isExpanded || hasCurrentPage) && "text-foreground"
+      <div className="relative group/header flex items-center">
+        <button
+          onClick={() => toggleSection(section.id)}
+          className={cn(
+            "flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold tracking-tight uppercase transition-colors relative",
+            "text-muted-foreground/70 hover:text-foreground",
+            "text-left group",
+            (isExpanded || hasCurrentPage) && "text-foreground",
+            isAdmin && "pr-8" // Space for handle/edit
+          )}
+          aria-expanded={isExpanded}
+        >
+          <span className="truncate">{section.title}</span>
+          <ChevronDown className={cn(
+            "h-3.5 w-3.5 ml-auto transition-transform duration-200 opacity-50 group-hover:opacity-100",
+            !isActive && "-rotate-90"
+          )} />
+        </button>
+        {isAdmin && (
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center opacity-0 group-hover/sortable:opacity-100 group-hover/header:opacity-100 transition-opacity bg-background border rounded mr-1 z-30">
+                <button 
+                  className="p-1 hover:bg-muted text-muted-foreground hover:text-foreground"
+                  onClick={(e) => openEditor(e, section, 'section')}
+                  title="Editar Orden/Detalles"
+                >
+                    <Pencil className="h-3 w-3" />
+                </button>
+            </div>
         )}
-        aria-expanded={isExpanded}
-      >
-        <span className="truncate">{section.title}</span>
-        <ChevronDown className={cn(
-          "h-3.5 w-3.5 ml-auto transition-transform duration-200 opacity-50 group-hover:opacity-100",
-          !isActive && "-rotate-90"
-        )} />
-      </button>
+      </div>
     );
 
     return (
       <div key={section.id} className="space-y-1" style={{ marginLeft: depth > 0 ? '8px' : '0' }}>
         {isAdmin ? (
-          <SortableSidebarItem id={`section-${section.id}`}>
+          <SortableSidebarItem id={`section - ${ section.id } `}>
             {SectionHeader}
           </SortableSidebarItem>
         ) : SectionHeader}
-
+        
         {isActive && (
           <div className="space-y-0.5 mt-1 border-l border-border/40 ml-3 pl-3">
             {/* Pages - Orderable List */}
             {sectionPages.length > 0 && (
               <SortableContext
-                id={`ctx-pages-${section.id}`}
-                items={sectionPages.map(p => `page-${p.id}`)}
+                id={`ctx - pages - ${ section.id } `}
+                items={sectionPages.map(p => `page - ${ p.id } `)}
                 strategy={verticalListSortingStrategy}
               >
                 <div className="space-y-0.5 mb-1">
                   {sectionPages.map((page) => {
                     const PageLink = (
-                      <Link
-                        to={`/docs/${section.slug}/${page.slug}`}
-                        onClick={onClose}
-                        className={cn(
-                          "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200 outline-none relative",
-                          isCurrentPage(section, page)
-                            ? "bg-primary/10 text-primary font-medium"
-                            : "text-muted-foreground/80 hover:bg-accent/50 hover:text-foreground"
-                        )}
-                      >
-                        <span className="truncate">{page.title}</span>
-                      </Link>
+                      <div className="relative group/page flex items-center">
+                        <Link
+                          to={`/ docs / ${ section.slug }/${page.slug}`}
+onClick = { onClose }
+className = {
+  cn(
+                            "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200 outline-none relative w-full",
+    isCurrentPage(section, page)
+  ? "bg-primary/10 text-primary font-medium"
+  : "text-muted-foreground/80 hover:bg-accent/50 hover:text-foreground",
+  isAdmin && "pr-8"
+                          )}
+                        >
+  <span className="truncate">{page.title}</span>
+                        </Link >
+  { isAdmin && (
+    <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center opacity-0 group-hover/sortable:opacity-100 group-hover/page:opacity-100 transition-opacity bg-background border rounded mr-1 z-30">
+      <button
+        className="p-1 hover:bg-muted text-muted-foreground hover:text-foreground"
+        onClick={(e) => openEditor(e, page, 'page')}
+        title="Editar Orden/Detalles"
+      >
+        <Pencil className="h-3 w-3" />
+      </button>
+    </div>
+  )}
+                      </div >
                     );
 
-                    return (
-                      <div key={page.id}>
-                        {isAdmin ? (
-                          <SortableSidebarItem id={`page-${page.id}`}>
-                            {PageLink}
-                          </SortableSidebarItem>
-                        ) : PageLink}
-                      </div>
-                    );
+return (
+  <div key={page.id}>
+    {isAdmin ? (
+      <SortableSidebarItem id={`page-${page.id}`}>
+        {PageLink}
+      </SortableSidebarItem>
+    ) : PageLink}
+  </div>
+);
                   })}
-                </div>
-              </SortableContext>
+                </div >
+              </SortableContext >
             )}
 
-            {/* Child Sections - Orderable List */}
-            {childSections.length > 0 && (
-              <SortableContext
-                id={`ctx-subsections-${section.id}`}
-                items={childSections.map(s => `section-${s.id}`)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-1">
-                  {childSections.map(child => renderSection(child, depth + 1))}
-                </div>
-              </SortableContext>
-            )}
-
-            {/* No content fallback */}
-            {sectionPages.length === 0 && childSections.length === 0 && (
-              <p className="py-1 px-3 text-xs text-muted-foreground/50 italic">Sin contenido</p>
-            )}
-
-            {isAdmin && (
-              <div className="pt-1">
-                <Link
-                  to={`/admin/pages/new?section=${section.id}`}
-                  onClick={onClose}
-                  className="flex items-center gap-2 px-3 py-1 text-[12px] text-primary/60 hover:text-primary transition-colors"
-                >
-                  <Plus className="h-3 w-3" />
-                  <span>Página</span>
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
+{/* Child Sections - Orderable List */ }
+{
+  childSections.length > 0 && (
+    <SortableContext
+      id={`ctx-subsections-${section.id}`}
+      items={childSections.map(s => `section-${s.id}`)}
+      strategy={verticalListSortingStrategy}
+    >
+      <div className="space-y-1">
+        {childSections.map(child => renderSection(child, depth + 1))}
       </div>
+    </SortableContext>
+  )
+}
+
+{/* No content fallback */ }
+{
+  sectionPages.length === 0 && childSections.length === 0 && (
+    <p className="py-1 px-3 text-xs text-muted-foreground/50 italic">Sin contenido</p>
+  )
+}
+
+{
+  isAdmin && (
+    <div className="pt-1">
+      <Link
+        to={`/admin/pages/new?section=${section.id}`}
+        onClick={onClose}
+        className="flex items-center gap-2 px-3 py-1 text-[12px] text-primary/60 hover:text-primary transition-colors"
+      >
+        <Plus className="h-3 w-3" />
+        <span>Página</span>
+      </Link>
+    </div>
+  )
+}
+          </div >
+        )}
+      </div >
     );
   };
 
-  const rootSections = sortedSections.filter(s => !s.parent_id);
+const rootSections = sortedSections.filter(s => !s.parent_id);
 
-  return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <ScrollArea className="h-full">
-        <div className="py-2 px-2 lg:px-4">
-          <nav className="space-y-1" role="navigation" aria-label="Documentación">
-            <SortableContext
-              id="ctx-root"
-              items={rootSections.map(s => `section-${s.id}`)}
-              strategy={verticalListSortingStrategy}
+return (
+  <DndContext
+    sensors={sensors}
+    collisionDetection={closestCenter}
+    onDragEnd={handleDragEnd}
+  >
+    <ScrollArea className="h-full">
+      <div className="py-2 px-2 lg:px-4">
+        <nav className="space-y-1" role="navigation" aria-label="Documentación">
+          <SortableContext
+            id="ctx-root"
+            items={rootSections.map(s => `section-${s.id}`)}
+            strategy={verticalListSortingStrategy}
+          >
+            {rootSections.map(s => renderSection(s))}
+          </SortableContext>
+        </nav>
+
+        {isAdmin && (
+          <div className="pt-8 mt-8 border-t border-border/40 space-y-1">
+            <Link
+              to="/admin/sections/new"
+              onClick={onClose}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground/70 hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors"
             >
-              {rootSections.map(s => renderSection(s))}
-            </SortableContext>
-          </nav>
+              <Plus className="h-4 w-4" />
+              <span>Nueva sección</span>
+            </Link>
+            <Link
+              to="/admin"
+              onClick={onClose}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground/70 hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Panel de admin</span>
+            </Link>
+          </div>
+        )}
+      </div>
+    </ScrollArea>
 
-          {isAdmin && (
-            <div className="pt-8 mt-8 border-t border-border/40 space-y-1">
-              <Link
-                to="/admin/sections/new"
-                onClick={onClose}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground/70 hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Nueva sección</span>
-              </Link>
-              <Link
-                to="/admin"
-                onClick={onClose}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground/70 hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors"
-              >
-                <Settings className="h-4 w-4" />
-                <span>Panel de admin</span>
-              </Link>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
-    </DndContext>
-  );
+    <ContentEditorDialog
+      open={editorOpen}
+      onOpenChange={setEditorOpen}
+      item={editingItem}
+    />
+  </DndContext>
+);
 }
+```
